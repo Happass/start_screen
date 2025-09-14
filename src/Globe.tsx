@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars } from "@react-three/drei";
+import { OrbitControls, Sphere } from "@react-three/drei";
 import * as THREE from "three";
-import { Pin } from "./Pin";
+
 import { Flower } from "./Flower";
 import { CameraRig } from "./CameraRig";
 import { MapModal } from "./MapModal";
@@ -87,36 +87,35 @@ function ClickableEarth({
   );
 }
 
+// 星空を3D空間に配置するコンポーネント
+function StarField() {
+  const ref = useRef<THREE.Points>(null);
+  const [geometry] = useState(() => {
+    const geo = new THREE.BufferGeometry();
+    const vertices = [];
+    for (let i = 0; i < 10000; i++) {
+      vertices.push(
+        THREE.MathUtils.randFloatSpread(200), // x
+        THREE.MathUtils.randFloatSpread(200), // y
+        THREE.MathUtils.randFloatSpread(200)  // z
+      );
+    }
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    return geo;
+  });
+
+  return (
+    <points ref={ref} geometry={geometry}>
+      <pointsMaterial color="white" size={0.15} />
+    </points>
+  );
+}
+
 export default function Globe() {
   const [target] = useState<THREE.Vector3 | null>(null);
   const [isPlacementMode, setIsPlacementMode] = useState(false);
 
-  const majorCities = [
-    { name: "東京", lat: 35.6895, lon: 139.6917 },
-    { name: "ニューヨーク", lat: 40.7128, lon: -74.0060 },
-    { name: "アムステルダム", lat: 52.3676, lon: 4.9041 },
-    { name: "シドニー", lat: -33.8688, lon: 151.2093 },
-    { name: "サンパウロ", lat: -23.5505, lon: -46.6333 },
-    { name: "ロンドン", lat: 51.5074, lon: -0.1278 },
-    { name: "パリ", lat: 48.8566, lon: 2.3522 },
-    { name: "ベルリン", lat: 52.5200, lon: 13.4050 },
-    { name: "ローマ", lat: 41.9028, lon: 12.4964 },
-    { name: "マドリード", lat: 40.4168, lon: -3.7038 },
-    { name: "モスクワ", lat: 55.7558, lon: 37.6173 },
-    { name: "北京", lat: 39.9042, lon: 116.4074 },
-    { name: "ムンバイ", lat: 19.0760, lon: 72.8777 },
-    { name: "カイロ", lat: 30.0444, lon: 31.2357 },
-    { name: "ケープタウン", lat: -33.9249, lon: 18.4241 },
-    { name: "リオデジャネイロ", lat: -22.9068, lon: -43.1729 },
-    { name: "メキシコシティ", lat: 19.4326, lon: -99.1332 },
-    { name: "トロント", lat: 43.6532, lon: -79.3832 },
-    { name: "バンコク", lat: 13.7563, lon: 100.5018 },
-    { name: "シンガポール", lat: 1.3521, lon: 103.8198 },
-    { name: "メルボルン", lat: -37.8136, lon: 144.9631 },
-    { name: "オークランド", lat: -36.8485, lon: 174.7633 },
-    { name: "ウェリントン", lat: -41.2865, lon: 174.7762 },
-    { name: "ブラジリア", lat: -15.8267, lon: -47.9218 },
-  ];
+  
 
   const [userFlowers, setUserFlowers] = useState<{ position: THREE.Vector3; type: 'mine' | 'others'; texture: 'flower1' | 'flower2' | 'flower3'; name: string }[]>([]);
 
@@ -306,7 +305,7 @@ export default function Globe() {
       <CameraRig target={target} />
 
       {/* 星空背景 */}
-      <Stars radius={300} depth={60} count={20000} factor={7} />
+      <StarField />
 
       {/* クリック可能な地球本体 */}
       <ClickableEarth
