@@ -323,8 +323,7 @@ export default function Globe() {
   const [latInput, setLatInput] = useState('');
   const [lonInput, setLonInput] = useState('');
   const [selectedTexture, setSelectedTexture] = useState<'flower1' | 'flower2'>('flower1');
-  const [filter, setFilter] = useState<'all' | 'mine' | 'others'>('all');
-  const [textureSort, setTextureSort] = useState<'none' | 'flower1-first' | 'flower2-first'>('none');
+  const [textureFilter, setTextureFilter] = useState<'all' | 'flower1' | 'flower2'>('all');
 
   // 近接する花が重ならないように位置を微調整する（クラスタごとに放射状に配置）
   const { adjustedPositions, scales } = useMemo(() => {
@@ -586,33 +585,22 @@ export default function Globe() {
       padding: '10px',
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
       borderRadius: '8px',
-      color: 'white',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '6px'
+      color: 'white'
     }}>
-      <label><input type="radio" value="all" checked={filter === 'all'} onChange={() => setFilter('all')} /> 全て</label>
-      <label><input type="radio" value="mine" checked={filter === 'mine'} onChange={() => setFilter('mine')} /> 自分の花</label>
-      <label><input type="radio" value="others" checked={filter === 'others'} onChange={() => setFilter('others')} /> 他人の花</label>
-
-      <div style={{ marginTop: '6px' }}>
-        <span style={{ marginRight: '8px' }}>ソート:</span>
-        <select
-          value={textureSort}
-          onChange={(e) => setTextureSort(e.target.value as any)}
-          style={{
-            backgroundColor: 'rgba(255,255,255,0.1)',
-            color: 'white',
-            border: '1px solid #FF6400',
-            borderRadius: '4px',
-            padding: '4px'
-          }}
-        >
-          <option value="none">なし</option>
-          <option value="flower1-first">flower1 → flower2</option>
-          <option value="flower2-first">flower2 → flower1</option>
-        </select>
-      </div>
+      <fieldset style={{ border: '1px solid #FF6400', borderRadius: '6px', padding: '8px', margin: 0 }}>
+        <legend style={{ padding: '0 6px', fontSize: '12px' }}>フィルター</legend>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <label style={{ cursor: 'pointer' }}>
+            <input type="radio" value="all" checked={textureFilter === 'all'} onChange={() => setTextureFilter('all')} /> 全て
+          </label>
+          <label style={{ cursor: 'pointer' }}>
+            <input type="radio" value="flower1" checked={textureFilter === 'flower1'} onChange={() => setTextureFilter('flower1')} /> 自分の花
+          </label>
+          <label style={{ cursor: 'pointer' }}>
+            <input type="radio" value="flower2" checked={textureFilter === 'flower2'} onChange={() => setTextureFilter('flower2')} /> 他人の花
+          </label>
+        </div>
+      </fieldset>
     </div>
 
     <Canvas
@@ -642,22 +630,14 @@ export default function Globe() {
         onPlaceFlower={handlePlaceFlower}
       />
 
-      {/* ユーザーが配置した花（フィルタ＆ソート＆重なり回避） */}
-      {[...userFlowers]
-        .map((f, i) => ({ f, i }))
-        .filter(({ f }) => filter === 'all' || f.type === filter)
-        .sort(({ f: a }, { f: b }) => {
-          if (textureSort === 'none') return 0;
-          const order = textureSort === 'flower1-first'
-            ? { flower1: 0, flower2: 1 }
-            : { flower2: 0, flower1: 1 } as Record<'flower1' | 'flower2', number>;
-          return order[a.texture] - order[b.texture];
-        })
-        .map(({ f: flower, i: originalIndex }, idx) => (
+      {/* ユーザーが配置した花（テクスチャフィルタ＆重なり回避） */}
+      {userFlowers
+        .filter(flower => textureFilter === 'all' || flower.texture === textureFilter)
+        .map((flower, idx) => (
         <Flower
-          key={`user-flower-${idx}`}
-          position={adjustedPositions[originalIndex]}
-          scale={scales[originalIndex]}
+          key={`user-flower-${flower.id || idx}`}
+          position={adjustedPositions[idx]}
+          scale={scales[idx]}
           texture={flower.texture}
           onClick={isPlacementMode ? undefined : () => showMap(flower.position, flower.type === 'mine' ? `${flower.name} (あなたの花)` : `${flower.name} (誰かの花)`)}
         />
