@@ -97,7 +97,7 @@ export function MapModal({ isOpen, onClose, latitude, longitude, locationName }:
 
           <div className="memories-section">
             <div className="memories-header">
-              <h4>💭 思い出</h4>
+              <h4>思い出</h4>
               <button
                 className="add-memory-btn"
                 onClick={() => setShowAddMemory(!showAddMemory)}
@@ -130,11 +130,11 @@ export function MapModal({ isOpen, onClose, latitude, longitude, locationName }:
                     id="photo-upload"
                   />
                   <label htmlFor="photo-upload" className="photo-label">
-                    📸 写真を追加
+                     写真を追加
                   </label>
                 </div>
                 <button onClick={saveMemory} className="save-memory-btn">
-                  💾 記憶を保存
+                   記憶を保存
                 </button>
               </div>
             )}

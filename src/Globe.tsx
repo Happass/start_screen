@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useState, useRef, useEffect } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Sphere, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { Pin } from "./Pin";
+import { Flower } from "./Flower";
 import { CameraRig } from "./CameraRig";
 import { MapModal } from "./MapModal";
 
@@ -28,58 +29,275 @@ const fromXYZ = (position: THREE.Vector3, radius: number) => {
   return { lat, lon };
 };
 
+// クリック可能な地球コンポーネント
+function ClickableEarth({
+  isPlacementMode,
+  onPlaceFlower
+}: {
+  isPlacementMode: boolean;
+  onPlaceFlower: (position: THREE.Vector3) => void;
+}) {
+  const { camera, raycaster } = useThree();
+  const earthRef = useRef<THREE.Mesh>(null);
+
+  const handleClick = (event: any) => {
+    if (!isPlacementMode || !earthRef.current) return;
+
+    event.stopPropagation();
+
+    // マウス座標を正規化デバイス座標に変換
+    const rect = event.target.getBoundingClientRect();
+    const mouse = new THREE.Vector2(
+      ((event.clientX - rect.left) / rect.width) * 2 - 1,
+      -((event.clientY - rect.top) / rect.height) * 2 + 1
+    );
+
+    // レイキャスト実行
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(earthRef.current);
+
+    if (intersects.length > 0) {
+      const intersect = intersects[0];
+      const position = intersect.point.clone();
+      position.normalize().multiplyScalar(1.01); // 地球表面より少し外側
+      onPlaceFlower(position);
+    }
+  };
+
+  return (
+    <Sphere
+      ref={earthRef}
+      args={[1, 64, 64]}
+      onClick={handleClick}
+      onPointerOver={(e) => {
+        if (isPlacementMode) {
+          e.target.style.cursor = 'crosshair';
+        }
+      }}
+      onPointerOut={(e) => {
+        e.target.style.cursor = 'auto';
+      }}
+    >
+      <meshStandardMaterial
+        map={new THREE.TextureLoader().load(
+          "https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg"
+        )}
+      />
+    </Sphere>
+  );
+}
+
 export default function Globe() {
   const [target] = useState<THREE.Vector3 | null>(null);
+  const [isPlacementMode, setIsPlacementMode] = useState(false);
+
+  const majorCities = [
+    { name: "東京", lat: 35.6895, lon: 139.6917 },
+    { name: "ニューヨーク", lat: 40.7128, lon: -74.0060 },
+    { name: "アムステルダム", lat: 52.3676, lon: 4.9041 },
+    { name: "シドニー", lat: -33.8688, lon: 151.2093 },
+    { name: "サンパウロ", lat: -23.5505, lon: -46.6333 },
+    { name: "ロンドン", lat: 51.5074, lon: -0.1278 },
+    { name: "パリ", lat: 48.8566, lon: 2.3522 },
+    { name: "ベルリン", lat: 52.5200, lon: 13.4050 },
+    { name: "ローマ", lat: 41.9028, lon: 12.4964 },
+    { name: "マドリード", lat: 40.4168, lon: -3.7038 },
+    { name: "モスクワ", lat: 55.7558, lon: 37.6173 },
+    { name: "北京", lat: 39.9042, lon: 116.4074 },
+    { name: "ムンバイ", lat: 19.0760, lon: 72.8777 },
+    { name: "カイロ", lat: 30.0444, lon: 31.2357 },
+    { name: "ケープタウン", lat: -33.9249, lon: 18.4241 },
+    { name: "リオデジャネイロ", lat: -22.9068, lon: -43.1729 },
+    { name: "メキシコシティ", lat: 19.4326, lon: -99.1332 },
+    { name: "トロント", lat: 43.6532, lon: -79.3832 },
+    { name: "バンコク", lat: 13.7563, lon: 100.5018 },
+    { name: "シンガポール", lat: 1.3521, lon: 103.8198 },
+    { name: "メルボルン", lat: -37.8136, lon: 144.9631 },
+    { name: "オークランド", lat: -36.8485, lon: 174.7633 },
+    { name: "ウェリントン", lat: -41.2865, lon: 174.7762 },
+    { name: "ブラジリア", lat: -15.8267, lon: -47.9218 },
+  ];
+
+  const [userFlowers, setUserFlowers] = useState<{ position: THREE.Vector3; type: 'mine' | 'others'; texture: 'flower1' | 'flower2' | 'flower3'; name: string }[]>([]);
+
+  // 初期化時にテスト花を追加
+  useEffect(() => {
+    if (userFlowers.length === 0) {
+      const testFlowers = [
+        {
+          position: toXYZ(35.6895, 139.6917, 1.01), // 東京
+          type: 'mine' as const,
+          texture: 'flower1' as const,
+          name: 'テスト花1'
+        },
+        {
+          position: toXYZ(40.7128, -74.006, 1.01), // ニューヨーク
+          type: 'others' as const,
+          texture: 'flower2' as const,
+          name: 'テスト花2'
+        }
+      ];
+      setUserFlowers(testFlowers);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userFlowers.length > 0) {
+      localStorage.setItem('userFlowers', JSON.stringify(userFlowers));
+    }
+  }, [userFlowers]);
+
   const [mapModal, setMapModal] = useState<{
     isOpen: boolean;
     lat: number;
     lon: number;
     name?: string;
   }>({ isOpen: false, lat: 0, lon: 0 });
+  const [latInput, setLatInput] = useState('');
+  const [lonInput, setLonInput] = useState('');
+  const [selectedTexture, setSelectedTexture] = useState<'flower1' | 'flower2' | 'flower3'>('flower1');
+  const [filter, setFilter] = useState<'all' | 'mine' | 'others'>('all');
 
   // 地図を表示する関数
   const showMap = (position: THREE.Vector3, name?: string) => {
+    if (isPlacementMode) return; // 配置モード中はモーダルを開かない
     const { lat, lon } = fromXYZ(position, 1.01);
     setMapModal({ isOpen: true, lat, lon, name });
   };
 
-  // 主要都市のピン情報
-  const majorCities = [
-    { name: "東京", lat: 35.6895, lon: 139.6917, color: "cyan" },
-    { name: "ニューヨーク", lat: 40.7128, lon: -74.006, color: "magenta" },
-    { name: "アムステルダム", lat: 52.3676, lon: 4.9041, color: "orange" },
-    { name: "シドニー", lat: -33.8688, lon: 151.2093, color: "yellow" },
-    { name: "サンパウロ", lat: -23.5505, lon: -46.6333, color: "lime" },
-    { name: "ロンドン", lat: 51.5074, lon: -0.1278, color: "red" },
-    { name: "パリ", lat: 48.8566, lon: 2.3522, color: "pink" },
-    { name: "ベルリン", lat: 52.5200, lon: 13.4050, color: "lightblue" },
-    { name: "ローマ", lat: 41.9028, lon: 12.4964, color: "gold" },
-    { name: "マドリード", lat: 40.4168, lon: -3.7038, color: "purple" },
-    { name: "モスクワ", lat: 55.7558, lon: 37.6173, color: "darkred" },
-    { name: "北京", lat: 39.9042, lon: 116.4074, color: "crimson" },
-    { name: "ムンバイ", lat: 19.0760, lon: 72.8777, color: "darkorange" },
-    { name: "カイロ", lat: 30.0444, lon: 31.2357, color: "tan" },
-    { name: "ケープタウン", lat: -33.9249, lon: 18.4241, color: "green" },
-    { name: "リオデジャネイロ", lat: -22.9068, lon: -43.1729, color: "aqua" },
-    { name: "メキシコシティ", lat: 19.4326, lon: -99.1332, color: "coral" },
-    { name: "トロント", lat: 43.6532, lon: -79.3832, color: "lightgreen" },
-    { name: "バンコク", lat: 13.7563, lon: 100.5018, color: "violet" },
-    { name: "シンガポール", lat: 1.3521, lon: 103.8198, color: "turquoise" },
-    { name: "メルボルン", lat: -37.8136, lon: 144.9631, color: "goldenrod" },
-    { name: "オークランド", lat: -36.8485, lon: 174.7633, color: "lightcoral" },
-    { name: "ウェリントン", lat: -41.2865, lon: 174.7762, color: "mediumseagreen" },
-    { name: "ブラジリア", lat: -15.8267, lon: -47.9218, color: "forestgreen" },
-  ];
+  // 花を配置する関数
+  const handlePlaceFlower = (position: THREE.Vector3) => {
+    const type = selectedTexture === 'flower1' ? 'mine' : 'others';
+    setUserFlowers(prev => [...prev, { position: position.clone(), type, texture: selectedTexture, name: 'New Flower' }]);
+  };
 
-  // Generate fewer random positions on the globe surface
-  const randomPins = Array.from({ length: 15 }, () => {
-    const lat = Math.random() * 180 - 90; // -90 to 90
-    const lon = Math.random() * 360 - 180; // -180 to 180
-    return { position: toXYZ(lat, lon, 1.01), lat, lon };
-  });
+  // 配置モードを切り替える関数
+  const togglePlacementMode = () => {
+    setIsPlacementMode(!isPlacementMode);
+  };
+
+  // 座標で花を配置する関数
+  const handleAddFlowerByCoordinates = () => {
+    const lat = parseFloat(latInput);
+    const lon = parseFloat(lonInput);
+
+    if (isNaN(lat) || isNaN(lon)) {
+      alert('緯度と経度を正しく入力してください。');
+      return;
+    }
+
+    const position = toXYZ(lat, lon, 1.01);
+    const type = selectedTexture === 'flower1' ? 'mine' : 'others';
+    setUserFlowers(prev => [...prev, { position: position.clone(), type, texture: selectedTexture, name: 'New Flower' }]);
+    setLatInput('');
+    setLonInput('');
+  };
 
   return (
     <>
+    {/* 花配置ボタン */}
+    <button
+      onClick={togglePlacementMode}
+      style={{
+        position: 'fixed',
+        top: '20px',
+        left: '20px',
+        zIndex: 1001,
+        padding: '12px 24px',
+        backgroundColor: isPlacementMode ? '#FF6400' : 'rgba(255, 100, 0, 0.2)',
+        color: isPlacementMode ? '#000' : '#FF6400',
+        border: '2px solid #FF6400',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontFamily: 'Courier New, monospace',
+        fontSize: '14px',
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        boxShadow: '0 0 20px rgba(255, 100, 0, 0.3)',
+        backdropFilter: 'blur(10px)',
+        transition: 'all 0.3s ease'
+      }}
+    >
+      {isPlacementMode ? '配置モード終了' : '花を配置'}
+    </button>
+
+    {isPlacementMode &&
+    <div style={{
+      position: 'fixed',
+      top: '80px',
+      left: '20px',
+      zIndex: 1001,
+      padding: '10px',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderRadius: '8px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px'
+    }}>
+      <div>
+        <button onClick={() => setSelectedTexture('flower1')} style={{ marginRight: '10px', backgroundColor: selectedTexture === 'flower1' ? '#FF6400' : 'grey' }}>自分の花</button>
+        <button onClick={() => setSelectedTexture('flower2')} style={{ marginRight: '10px', backgroundColor: selectedTexture === 'flower2' ? '#FF6400' : 'grey' }}>他人の花1</button>
+        <button onClick={() => setSelectedTexture('flower3')} style={{ backgroundColor: selectedTexture === 'flower3' ? '#FF6400' : 'grey' }}>他人の花2</button>
+      </div>
+      <input
+        type="text"
+        placeholder="緯度 (e.g., 35.68)"
+        value={latInput}
+        onChange={(e) => setLatInput(e.target.value)}
+        style={{
+          padding: '8px',
+          borderRadius: '4px',
+          border: '1px solid #FF6400',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          color: 'white'
+        }}
+      />
+      <input
+        type="text"
+        placeholder="経度 (e.g., 139.69)"
+        value={lonInput}
+        onChange={(e) => setLonInput(e.target.value)}
+        style={{
+          padding: '8px',
+          borderRadius: '4px',
+          border: '1px solid #FF6400',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          color: 'white'
+        }}
+      />
+      <button
+        onClick={handleAddFlowerByCoordinates}
+        style={{
+          padding: '10px',
+          backgroundColor: '#FF6400',
+          color: '#000',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          fontWeight: 'bold'
+        }}
+      >
+        座標で配置
+      </button>
+    </div>
+    }
+
+    <div style={{
+      position: 'fixed',
+      top: '20px',
+      right: '20px',
+      zIndex: 1001,
+      padding: '10px',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderRadius: '8px',
+      color: 'white'
+    }}>
+      <label><input type="radio" value="all" checked={filter === 'all'} onChange={() => setFilter('all')} /> 全て</label>
+      <label><input type="radio" value="mine" checked={filter === 'mine'} onChange={() => setFilter('mine')} /> 自分の花</label>
+      <label><input type="radio" value="others" checked={filter === 'others'} onChange={() => setFilter('others')} /> 他人の花</label>
+    </div>
+
     <Canvas
       camera={{ position: [0, 0, 5] }}
       style={{ width: "100vw", height: "100vh", background: "black" }}
@@ -90,39 +308,22 @@ export default function Globe() {
       {/* 星空背景 */}
       <Stars radius={300} depth={60} count={20000} factor={7} />
 
-      {/* 地球本体 */}
-      <Sphere args={[1, 64, 64]}>
-        <meshStandardMaterial
-          map={new THREE.TextureLoader().load(
-            "https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg"
-          )}
-        />
-      </Sphere>
+      {/* クリック可能な地球本体 */}
+      <ClickableEarth
+        isPlacementMode={isPlacementMode}
+        onPlaceFlower={handlePlaceFlower}
+      />
 
-      {/* 主要都市のピン */}
-      {majorCities.map((city, idx) => (
-        <Pin
-          key={`city-${idx}`}
-          position={toXYZ(city.lat, city.lon, 1.01)}
-          color={city.color}
-          onClick={() => showMap(toXYZ(city.lat, city.lon, 1.01), city.name)}
+      {/* ユーザーが配置した花 */}
+      {userFlowers
+        .filter(flower => filter === 'all' || flower.type === filter)
+        .map((flower, idx) => (
+        <Flower
+          key={`user-flower-${idx}`}
+          position={flower.position}
+          texture={flower.texture}
+          onClick={isPlacementMode ? undefined : () => showMap(flower.position, flower.type === 'mine' ? `${flower.name} (あなたの花)` : `${flower.name} (誰かの花)`)}
         />
-      ))}
-
-      {/* ランダムな場所に小さなhana.png画像を配置 */}
-      {randomPins.map((pin, idx) => (
-        <mesh
-          key={`random-${idx}`}
-          position={pin.position}
-          scale={[0.1, 0.1, 0.1]}
-          onClick={() => showMap(pin.position, `ランダムピン ${idx + 1}`)}
-        >
-          <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial
-            map={new THREE.TextureLoader().load("/hana.png")}
-            transparent
-          />
-        </mesh>
       ))}
 
       {/* 照明 */}

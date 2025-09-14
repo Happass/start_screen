@@ -67,3 +67,9 @@ export default tseslint.config([
   },
 ])
 ```
+
+花が咲いた地球　たくさんの花が咲いている
+
+しおれた花をソートできる
+
+

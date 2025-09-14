@@ -2,15 +2,21 @@ import { Vector3 } from "three";
 import * as THREE from "three";
 import { useRef, useEffect } from "react";
 
-type PinProps = {
+type FlowerProps = {
   position: Vector3;
-  color?: string;
   onClick?: () => void;
-  onMove?: (pos: Vector3) => void;
+  texture: 'flower1' | 'flower2' | 'flower3' | 'withered';
 };
 
-export function Pin({ position, onClick }: PinProps) {
+export function Flower({ position, onClick, texture }: FlowerProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+
+  const textureUrl = {
+    flower1: '/flower.PNG',
+    flower2: '/flower2.png',
+    flower3: '/flower3.png',
+    withered: '/withered_flower.png',
+  }[texture];
 
   useEffect(() => {
     if (meshRef.current) {
@@ -27,9 +33,8 @@ export function Pin({ position, onClick }: PinProps) {
     <mesh ref={meshRef} position={position} onClick={onClick} scale={[0.15, 0.15, 0.15]}>
       <planeGeometry args={[1, 1]} />
       <meshBasicMaterial
-        map={new THREE.TextureLoader().load("/flower.PNG", texture => {
+        map={new THREE.TextureLoader().load(textureUrl, texture => {
           texture.center.set(0.5, 0.5);
-          texture.rotation = Math.PI / 4;
           texture.needsUpdate = true;
           return texture;
         })}
