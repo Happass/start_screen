@@ -1,46 +1,54 @@
 import { Vector3 } from "three";
 import * as THREE from "three";
-import { useRef, useEffect } from "react";
+import { useRef, useMemo } from "react";
 
 type FlowerProps = {
   position: Vector3;
   onClick?: () => void;
-  texture: 'flower1' | 'flower2' | 'flower3' | 'withered';
+  texture: 'flower1' | 'flower2';
+  scale?: number; // density-based scaling
 };
 
-export function Flower({ position, onClick, texture }: FlowerProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+// モジュールスコープの簡易テクスチャキャッシュ（重複ロード防止）
+const textureCache: Record<string, THREE.Texture> = {};
 
-  const textureUrl = {
+export function Flower({ position, onClick, texture, scale = 0.15 }: FlowerProps) {
+  const spriteRef = useRef<THREE.Sprite>(null);
+
+  const textureUrl = useMemo(() => ({
     flower1: '/flower.PNG',
     flower2: '/flower2.png',
-    flower3: '/flower3.png',
-    withered: '/withered_flower.png',
-  }[texture];
+  }[texture]), [texture]);
 
-  // 静止状態での初期向き設定
-  useEffect(() => {
-    if (meshRef.current) {
-      // 地球の中心から外向きに向かせる
-      meshRef.current.lookAt(
-        position.x * 2,
-        position.y * 2,
-        position.z * 2
-      );
+  const mapTex = useMemo(() => {
+    if (!textureCache[textureUrl]) {
+      const t = new THREE.TextureLoader().load(textureUrl);
+      t.wrapS = THREE.ClampToEdgeWrapping;
+      t.wrapT = THREE.ClampToEdgeWrapping;
+      t.minFilter = THREE.LinearFilter; // 透明境界のギザつき軽減
+      t.magFilter = THREE.LinearFilter;
+      t.anisotropy = 4;
+      textureCache[textureUrl] = t;
     }
-  }, [position]);
+    return textureCache[textureUrl];
+  }, [textureUrl]);
 
   return (
-    <mesh ref={meshRef} position={position} onClick={onClick} scale={[0.15, 0.15, 0.15]}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial
-        map={new THREE.TextureLoader().load(textureUrl, texture => {
-          texture.center.set(0.5, 0.5);
-          texture.needsUpdate = true;
-          return texture;
-        })}
+    <sprite
+      ref={spriteRef}
+      position={position}
+      onClick={onClick}
+      scale={[scale, scale, 1]}
+      renderOrder={2}
+    >
+      <spriteMaterial
+        map={mapTex}
         transparent
+        depthWrite={false}  // 透明のソート破綻を抑止
+        depthTest={true}
+        alphaTest={0.5}     // しきい値以下は描画しない（ハロー対策）
+        fog={false}
       />
-    </mesh>
+    </sprite>
   );
 }
