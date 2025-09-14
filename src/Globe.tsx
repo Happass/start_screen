@@ -44,6 +44,7 @@ function EarthMaterial() {
       shininess={100}
       transparent={false}
       side={THREE.FrontSide}
+      color="#4A90E2"
     />
   );
 }
