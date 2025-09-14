@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars, useTexture } from "@react-three/drei";
+import { OrbitControls, Sphere, useTexture } from "@react-three/drei";
 import * as THREE from "three";
+
 import { Flower } from "./Flower";
 import { CameraRig } from "./CameraRig";
 import { MapModal } from "./MapModal";
@@ -133,9 +134,34 @@ function ClickableEarth({
   );
 }
 
+// 星空を3D空間に配置するコンポーネント
+function StarField() {
+  const ref = useRef<THREE.Points>(null);
+  const [geometry] = useState(() => {
+    const geo = new THREE.BufferGeometry();
+    const vertices = [];
+    for (let i = 0; i < 10000; i++) {
+      vertices.push(
+        THREE.MathUtils.randFloatSpread(200), // x
+        THREE.MathUtils.randFloatSpread(200), // y
+        THREE.MathUtils.randFloatSpread(200)  // z
+      );
+    }
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    return geo;
+  });
+
+  return (
+    <points ref={ref} geometry={geometry}>
+      <pointsMaterial color="white" size={0.15} />
+    </points>
+  );
+}
+
 export default function Globe() {
   const [target] = useState<THREE.Vector3 | null>(null);
   const [isPlacementMode, setIsPlacementMode] = useState(false);
+
 
 
   const [userFlowers, setUserFlowers] = useState<{ position: THREE.Vector3; type: 'mine' | 'others'; texture: 'flower1' | 'flower2' | 'flower3'; name: string }[]>([]);
@@ -337,7 +363,7 @@ export default function Globe() {
       <CameraRig target={target} />
 
       {/* 星空背景 */}
-      <Stars radius={300} depth={60} count={20000} factor={7} />
+      <StarField />
 
       {/* クリック可能な地球本体 */}
       <ClickableEarth
