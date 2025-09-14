@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { MemoryAPI } from "./services/api";
 
 interface Memory {
@@ -149,7 +149,7 @@ export function MapModal({ isOpen, onClose, latitude, longitude, locationName }:
   });
 
   // APIから記憶を読み込む（緯度経度ベース）
-  const loadMemories = async () => {
+  const loadMemories = useCallback(async () => {
     try {
       setLoading(true);
       const response = await MemoryAPI.getMemoriesByLocation(latitude, longitude);
@@ -181,13 +181,13 @@ export function MapModal({ isOpen, onClose, latitude, longitude, locationName }:
     } finally {
       setLoading(false);
     }
-  };
+  }, [latitude, longitude, locationName]);
 
   useEffect(() => {
     if (isOpen && latitude && longitude) {
       loadMemories();
     }
-  }, [isOpen, latitude, longitude]);
+  }, [isOpen, latitude, longitude, loadMemories]);
 
   // 記憶を保存
   const saveMemory = async () => {

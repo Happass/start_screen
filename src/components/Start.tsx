@@ -7,7 +7,7 @@ interface StartProps {
 
 export default function Start({ onStart }: StartProps) {
   const [isSeeding, setIsSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState('');
+  const [seedMessage, setSeedMessage] = useState<React.ReactNode>('');
 
   const handleSeedData = async () => {
     setIsSeeding(true);
@@ -25,14 +25,14 @@ export default function Start({ onStart }: StartProps) {
         try {
           await FlowerAPI.createFlower(flower);
           successCount++;
-        } catch (error: any) {
-          const errorMessage = `Failed to create flower "${flower.name}": ${error.message}`;
+        } catch (error: unknown) {
+          const errorMessage = `Failed to create flower "${flower.name}": ${error instanceof Error ? error.message : String(error)}`;
           console.error(errorMessage);
           errorMessages.push(errorMessage);
         }
       }
 
-      let finalMessage = `${successCount} of ${flowers.length} flowers seeded successfully.`;
+      const finalMessage = `${successCount} of ${flowers.length} flowers seeded successfully.`;
       if (errorMessages.length > 0) {
         // Using <br> for line breaks in HTML
         setSeedMessage(<> {finalMessage} <br/> Errors: <br/> {errorMessages.join('<br/>')} </>);
@@ -40,9 +40,9 @@ export default function Start({ onStart }: StartProps) {
         setSeedMessage(finalMessage);
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to seed data:', error);
-      setSeedMessage(`Failed to seed data: ${error.message}`);
+      setSeedMessage(`Failed to seed data: ${error instanceof Error ? error.message : String(error)}`);
     }
     setIsSeeding(false);
   };

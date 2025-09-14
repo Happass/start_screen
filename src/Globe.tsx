@@ -83,13 +83,13 @@ function ClickableEarth({
   //   animate();
   // }, []);
 
-  const handleClick = (event: any) => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (!isPlacementMode || !earthRef.current) return;
 
     event.stopPropagation();
 
     // マウス座標を正規化デバイス座標に変換
-    const rect = event.target.getBoundingClientRect();
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
     const mouse = new THREE.Vector2(
       ((event.clientX - rect.left) / rect.width) * 2 - 1,
       -((event.clientY - rect.top) / rect.height) * 2 + 1
