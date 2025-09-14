@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Sphere, Stars } from "@react-three/drei";
+import { OrbitControls, Sphere, Stars, useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { Pin } from "./Pin";
 import { Flower } from "./Flower";
 import { CameraRig } from "./CameraRig";
 import { MapModal } from "./MapModal";
@@ -29,6 +28,40 @@ const fromXYZ = (position: THREE.Vector3, radius: number) => {
   return { lat, lon };
 };
 
+// 高品質な地球マテリアルコンポーネント
+function EarthMaterial() {
+  const [earthTexture, normalMap, specularMap] = useTexture([
+    "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+    "https://threejs.org/examples/textures/planets/earth_normal_2048.jpg",
+    "https://threejs.org/examples/textures/planets/earth_specular_2048.jpg"
+  ]);
+
+  return (
+    <meshPhongMaterial
+      map={earthTexture}
+      normalMap={normalMap}
+      specularMap={specularMap}
+      shininess={100}
+      transparent={false}
+      side={THREE.FrontSide}
+    />
+  );
+}
+
+// 大気圏エフェクトコンポーネント
+function Atmosphere() {
+  return (
+    <Sphere args={[1.02, 32, 32]}>
+      <meshBasicMaterial
+        color={0x87CEEB}
+        transparent={true}
+        opacity={0.15}
+        side={THREE.BackSide}
+      />
+    </Sphere>
+  );
+}
+
 // クリック可能な地球コンポーネント
 function ClickableEarth({
   isPlacementMode,
@@ -39,6 +72,18 @@ function ClickableEarth({
 }) {
   const { camera, raycaster } = useThree();
   const earthRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+
+  // 地球の回転アニメーションを停止
+  // useEffect(() => {
+  //   const animate = () => {
+  //     if (groupRef.current) {
+  //       groupRef.current.rotation.y += 0.001;
+  //     }
+  //     requestAnimationFrame(animate);
+  //   };
+  //   animate();
+  // }, []);
 
   const handleClick = (event: any) => {
     if (!isPlacementMode || !earthRef.current) return;
@@ -65,25 +110,26 @@ function ClickableEarth({
   };
 
   return (
-    <Sphere
-      ref={earthRef}
-      args={[1, 64, 64]}
-      onClick={handleClick}
-      onPointerOver={(e) => {
-        if (isPlacementMode) {
-          e.target.style.cursor = 'crosshair';
-        }
-      }}
-      onPointerOut={(e) => {
-        e.target.style.cursor = 'auto';
-      }}
-    >
-      <meshStandardMaterial
-        map={new THREE.TextureLoader().load(
-          "https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg"
-        )}
-      />
-    </Sphere>
+    <group ref={groupRef}>
+      <Sphere
+        ref={earthRef}
+        args={[1, 128, 128]}
+        onClick={handleClick}
+        onPointerOver={(e) => {
+          if (isPlacementMode && e.target) {
+            (e.target as HTMLElement).style.cursor = 'crosshair';
+          }
+        }}
+        onPointerOut={(e) => {
+          if (e.target) {
+            (e.target as HTMLElement).style.cursor = 'auto';
+          }
+        }}
+      >
+        <EarthMaterial />
+      </Sphere>
+      <Atmosphere />
+    </group>
   );
 }
 
@@ -91,32 +137,6 @@ export default function Globe() {
   const [target] = useState<THREE.Vector3 | null>(null);
   const [isPlacementMode, setIsPlacementMode] = useState(false);
 
-  const majorCities = [
-    { name: "東京", lat: 35.6895, lon: 139.6917 },
-    { name: "ニューヨーク", lat: 40.7128, lon: -74.0060 },
-    { name: "アムステルダム", lat: 52.3676, lon: 4.9041 },
-    { name: "シドニー", lat: -33.8688, lon: 151.2093 },
-    { name: "サンパウロ", lat: -23.5505, lon: -46.6333 },
-    { name: "ロンドン", lat: 51.5074, lon: -0.1278 },
-    { name: "パリ", lat: 48.8566, lon: 2.3522 },
-    { name: "ベルリン", lat: 52.5200, lon: 13.4050 },
-    { name: "ローマ", lat: 41.9028, lon: 12.4964 },
-    { name: "マドリード", lat: 40.4168, lon: -3.7038 },
-    { name: "モスクワ", lat: 55.7558, lon: 37.6173 },
-    { name: "北京", lat: 39.9042, lon: 116.4074 },
-    { name: "ムンバイ", lat: 19.0760, lon: 72.8777 },
-    { name: "カイロ", lat: 30.0444, lon: 31.2357 },
-    { name: "ケープタウン", lat: -33.9249, lon: 18.4241 },
-    { name: "リオデジャネイロ", lat: -22.9068, lon: -43.1729 },
-    { name: "メキシコシティ", lat: 19.4326, lon: -99.1332 },
-    { name: "トロント", lat: 43.6532, lon: -79.3832 },
-    { name: "バンコク", lat: 13.7563, lon: 100.5018 },
-    { name: "シンガポール", lat: 1.3521, lon: 103.8198 },
-    { name: "メルボルン", lat: -37.8136, lon: 144.9631 },
-    { name: "オークランド", lat: -36.8485, lon: 174.7633 },
-    { name: "ウェリントン", lat: -41.2865, lon: 174.7762 },
-    { name: "ブラジリア", lat: -15.8267, lon: -47.9218 },
-  ];
 
   const [userFlowers, setUserFlowers] = useState<{ position: THREE.Vector3; type: 'mine' | 'others'; texture: 'flower1' | 'flower2' | 'flower3'; name: string }[]>([]);
 
@@ -299,8 +319,19 @@ export default function Globe() {
     </div>
 
     <Canvas
-      camera={{ position: [0, 0, 5] }}
+      camera={{ 
+        position: [0, 0, 5], 
+        fov: 50,
+        near: 0.1,
+        far: 1000
+      }}
       style={{ width: "100vw", height: "100vh", background: "black" }}
+      gl={{ 
+        antialias: true, 
+        alpha: true,
+        powerPreference: "high-performance"
+      }}
+      dpr={[1, 2]}
     >
       {/* カメラワープ制御 */}
       <CameraRig target={target} />
@@ -326,12 +357,36 @@ export default function Globe() {
         />
       ))}
 
-      {/* 照明 */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 3, 5]} intensity={1} />
+      {/* 高品質な照明設定 */}
+      <ambientLight intensity={0.3} color="#404040" />
+      <directionalLight 
+        position={[5, 3, 5]} 
+        intensity={1.2} 
+        color="#ffffff"
+        castShadow={false}
+      />
+      <directionalLight 
+        position={[-5, -3, -5]} 
+        intensity={0.3} 
+        color="#87CEEB"
+      />
+      <pointLight 
+        position={[0, 0, 0]} 
+        intensity={0.1} 
+        color="#ffffff"
+        distance={10}
+      />
 
       {/* マウス操作 */}
-      <OrbitControls />
+      <OrbitControls 
+        enableDamping={true}
+        dampingFactor={0.05}
+        minDistance={2}
+        maxDistance={20}
+        enablePan={true}
+        enableZoom={true}
+        enableRotate={true}
+      />
     </Canvas>
 
     {/* 地図モーダル */}

@@ -18,6 +18,7 @@ export function Flower({ position, onClick, texture }: FlowerProps) {
     withered: '/withered_flower.png',
   }[texture];
 
+  // 静止状態での初期向き設定
   useEffect(() => {
     if (meshRef.current) {
       // 地球の中心から外向きに向かせる
