@@ -29,6 +29,40 @@ const fromXYZ = (position: THREE.Vector3, radius: number) => {
   return { lat, lon };
 };
 
+// 高品質な地球マテリアルコンポーネント
+function EarthMaterial() {
+  const [earthTexture, normalMap, specularMap] = useTexture([
+    "https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg",
+    "https://threejs.org/examples/textures/planets/earth_normal_2048.jpg",
+    "https://threejs.org/examples/textures/planets/earth_specular_2048.jpg"
+  ]);
+
+  return (
+    <meshPhongMaterial
+      map={earthTexture}
+      normalMap={normalMap}
+      specularMap={specularMap}
+      shininess={100}
+      transparent={false}
+      side={THREE.FrontSide}
+    />
+  );
+}
+
+// 大気圏エフェクトコンポーネント
+function Atmosphere() {
+  return (
+    <Sphere args={[1.02, 32, 32]}>
+      <meshBasicMaterial
+        color={0x87CEEB}
+        transparent={true}
+        opacity={0.15}
+        side={THREE.BackSide}
+      />
+    </Sphere>
+  );
+}
+
 // クリック可能な地球コンポーネント
 function ClickableEarth({
   isPlacementMode,
@@ -39,6 +73,18 @@ function ClickableEarth({
 }) {
   const { camera, raycaster } = useThree();
   const earthRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+
+  // 地球の回転アニメーションを停止
+  // useEffect(() => {
+  //   const animate = () => {
+  //     if (groupRef.current) {
+  //       groupRef.current.rotation.y += 0.001;
+  //     }
+  //     requestAnimationFrame(animate);
+  //   };
+  //   animate();
+  // }, []);
 
   const handleClick = (event: any) => {
     if (!isPlacementMode || !earthRef.current) return;
@@ -65,25 +111,26 @@ function ClickableEarth({
   };
 
   return (
-    <Sphere
-      ref={earthRef}
-      args={[1, 64, 64]}
-      onClick={handleClick}
-      onPointerOver={(e) => {
-        if (isPlacementMode) {
-          e.target.style.cursor = 'crosshair';
-        }
-      }}
-      onPointerOut={(e) => {
-        e.target.style.cursor = 'auto';
-      }}
-    >
-      <meshStandardMaterial
-        map={new THREE.TextureLoader().load(
-          "https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg"
-        )}
-      />
-    </Sphere>
+    <group ref={groupRef}>
+      <Sphere
+        ref={earthRef}
+        args={[1, 128, 128]}
+        onClick={handleClick}
+        onPointerOver={(e) => {
+          if (isPlacementMode && e.target) {
+            (e.target as HTMLElement).style.cursor = 'crosshair';
+          }
+        }}
+        onPointerOut={(e) => {
+          if (e.target) {
+            (e.target as HTMLElement).style.cursor = 'auto';
+          }
+        }}
+      >
+        <EarthMaterial />
+      </Sphere>
+      <Atmosphere />
+    </group>
   );
 }
 
@@ -115,7 +162,7 @@ export default function Globe() {
   const [target] = useState<THREE.Vector3 | null>(null);
   const [isPlacementMode, setIsPlacementMode] = useState(false);
 
-  
+
 
   const [userFlowers, setUserFlowers] = useState<{ position: THREE.Vector3; type: 'mine' | 'others'; texture: 'flower1' | 'flower2' | 'flower3'; name: string }[]>([]);
 
@@ -298,8 +345,19 @@ export default function Globe() {
     </div>
 
     <Canvas
-      camera={{ position: [0, 0, 5] }}
+      camera={{ 
+        position: [0, 0, 5], 
+        fov: 50,
+        near: 0.1,
+        far: 1000
+      }}
       style={{ width: "100vw", height: "100vh", background: "black" }}
+      gl={{ 
+        antialias: true, 
+        alpha: true,
+        powerPreference: "high-performance"
+      }}
+      dpr={[1, 2]}
     >
       {/* カメラワープ制御 */}
       <CameraRig target={target} />
@@ -325,12 +383,36 @@ export default function Globe() {
         />
       ))}
 
-      {/* 照明 */}
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 3, 5]} intensity={1} />
+      {/* 高品質な照明設定 */}
+      <ambientLight intensity={0.3} color="#404040" />
+      <directionalLight 
+        position={[5, 3, 5]} 
+        intensity={1.2} 
+        color="#ffffff"
+        castShadow={false}
+      />
+      <directionalLight 
+        position={[-5, -3, -5]} 
+        intensity={0.3} 
+        color="#87CEEB"
+      />
+      <pointLight 
+        position={[0, 0, 0]} 
+        intensity={0.1} 
+        color="#ffffff"
+        distance={10}
+      />
 
       {/* マウス操作 */}
-      <OrbitControls />
+      <OrbitControls 
+        enableDamping={true}
+        dampingFactor={0.05}
+        minDistance={2}
+        maxDistance={20}
+        enablePan={true}
+        enableZoom={true}
+        enableRotate={true}
+      />
     </Canvas>
 
     {/* 地図モーダル */}
