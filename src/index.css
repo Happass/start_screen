@@ -83,6 +83,63 @@ code {
   }
 }
 
+/* スタートページレスポンシブ対応 */
+@media (max-width: 768px) {
+  .start-title {
+    font-size: 4rem;
+    letter-spacing: 0.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .start-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    padding: 0 20px;
+  }
+
+  .start-button {
+    font-size: 1.2rem;
+    padding: 0.8rem 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .start-title {
+    font-size: 3rem;
+    letter-spacing: 0.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .start-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    padding: 0 15px;
+    text-align: center;
+  }
+
+  .start-button {
+    font-size: 1rem;
+    padding: 0.7rem 2rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .start-title {
+    font-size: 2.5rem;
+    letter-spacing: 0.1rem;
+  }
+
+  .start-subtitle {
+    font-size: 0.9rem;
+    padding: 0 10px;
+  }
+
+  .start-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.5rem;
+  }
+}
+
 /* 地図モーダルのスタイル - サイバーパンク風 */
 .map-modal-overlay {
   position: fixed;
@@ -626,4 +683,514 @@ code {
   color: rgba(0, 0, 0, 0.7);
   font-size: 0.7em;
   font-family: 'Courier New', monospace;
+}
+
+/* レスポンシブ対応 - タブレット・モバイル */
+@media (max-width: 1024px) {
+  .map-modal {
+    width: 95%;
+    height: 85%;
+    max-width: 900px;
+  }
+
+  .memories-section {
+    width: 280px;
+  }
+
+  .map-modal-header h3 {
+    font-size: 1.1em;
+  }
+
+  .close-button {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* モバイルランドスケープ */
+  .map-modal {
+    width: 98%;
+    height: 90%;
+    max-width: none;
+    border-radius: 12px;
+  }
+
+  .map-modal-content {
+    flex-direction: column;
+  }
+
+  .map-container {
+    height: 45%;
+    min-height: 250px;
+    border-radius: 0;
+  }
+
+  .memories-section {
+    width: 100%;
+    height: 55%;
+    border-left: none;
+    border-top: 1px solid rgba(255, 100, 0, 0.35);
+  }
+
+  .map-modal-header {
+    padding: 16px 20px;
+  }
+
+  .map-modal-header h3 {
+    font-size: 1em;
+    letter-spacing: 1px;
+  }
+
+  .memories-header {
+    padding: 16px;
+  }
+
+  .add-memory-form {
+    padding: 16px;
+  }
+
+  .memories-list {
+    padding: 16px;
+  }
+
+  .speech-bubble {
+    max-width: 200px;
+  }
+
+  .speech-bubble-text {
+    max-width: 240px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* モバイルポートレート */
+  .map-modal {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-height: none;
+  }
+
+  .map-modal-overlay {
+    padding: 0;
+  }
+
+  .map-container {
+    height: 40%;
+    min-height: 200px;
+  }
+
+  .memories-section {
+    height: 60%;
+  }
+
+  .map-modal-header {
+    padding: 12px 16px;
+  }
+
+  .map-modal-header h3 {
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+  }
+
+  .close-button {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .memories-header {
+    padding: 12px 16px;
+  }
+
+  .memories-header h4 {
+    font-size: 1em;
+  }
+
+  .add-memory-btn {
+    font-size: 0.8em;
+    padding: 6px 10px;
+  }
+
+  .add-memory-form {
+    padding: 12px 16px;
+  }
+
+  .memory-input,
+  .memory-textarea {
+    font-size: 0.8em;
+    padding: 8px 10px;
+  }
+
+  .memory-textarea {
+    height: 60px;
+  }
+
+  .save-memory-btn {
+    font-size: 0.8em;
+    padding: 8px;
+  }
+
+  .memories-list {
+    padding: 12px 16px;
+  }
+
+  .memory-card {
+    padding: 10px;
+    margin-bottom: 16px;
+  }
+
+  .memory-photo {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .memory-photo img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .speech-bubble {
+    max-width: 100%;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .speech-bubble::before {
+    left: 50%;
+    top: -8px;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid rgba(60, 25, 0, 0.9);
+    border-top: none;
+  }
+
+  .speech-bubble-text {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .memory-text-only {
+    margin-left: 0;
+  }
+
+  .speech-bubble-text::before {
+    display: none;
+  }
+
+  .memory-content h5,
+  .speech-bubble-text h5 {
+    font-size: 0.85em;
+  }
+
+  .memory-content p,
+  .speech-bubble-text p {
+    font-size: 0.75em;
+  }
+
+  .memory-date {
+    font-size: 0.65em;
+  }
+}
+
+/* 超小型デバイス */
+@media (max-width: 320px) {
+  .map-modal-header h3 {
+    font-size: 0.8em;
+  }
+
+  .close-button {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .memory-input,
+  .memory-textarea {
+    font-size: 0.75em;
+  }
+
+  .memory-textarea {
+    height: 50px;
+  }
+
+  .add-memory-btn,
+  .save-memory-btn {
+    font-size: 0.75em;
+  }
+}
+
+/* タッチデバイス向け改善 */
+@media (hover: none) and (pointer: coarse) {
+  .close-button,
+  .add-memory-btn,
+  .save-memory-btn,
+  .photo-label {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .memory-input,
+  .memory-textarea {
+    min-height: 44px;
+    -webkit-appearance: none;
+    border-radius: 8px;
+  }
+
+  .memory-input:focus,
+  .memory-textarea:focus {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+  }
+}
+
+/* ローディング状態の改善 */
+.loading-message {
+  text-align: center;
+  color: rgba(255, 100, 0, 0.7);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 20px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* スクロールバーの改善 - モバイル */
+@media (max-width: 768px) {
+  .memories-list::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .memories-list::-webkit-scrollbar-track {
+    background: rgba(255, 100, 0, 0.04);
+  }
+
+  .memories-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 100, 0, 0.5);
+    border-radius: 2px;
+  }
+}
+
+/* Globe UI Controls Responsive */
+.globe-ui-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(40, 15, 0, 0.9);
+  border: 1px solid rgba(255, 100, 0, 0.5);
+  border-radius: 8px;
+  padding: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(255, 100, 0, 0.3);
+  z-index: 100;
+}
+
+.globe-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.globe-control-section {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.globe-button {
+  background: rgba(60, 25, 0, 0.8);
+  color: #FF6400;
+  border: 1px solid rgba(255, 100, 0, 0.6);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+  font-weight: 300;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 100, 0, 0.25);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  backdrop-filter: blur(10px);
+  font-family: 'Courier New', monospace;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.globe-button:hover {
+  background: rgba(255, 100, 0, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(255, 100, 0, 0.4);
+  border-color: #FF6400;
+  color: #ffffff;
+}
+
+.globe-input {
+  background: rgba(40, 15, 0, 0.7);
+  color: #FF6400;
+  border: 1px solid rgba(255, 100, 0, 0.5);
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-family: 'Courier New', monospace;
+  width: 80px;
+}
+
+.globe-input:focus {
+  outline: none;
+  border-color: #FF6400;
+  box-shadow: 0 0 10px rgba(255, 100, 0, 0.3);
+  background: rgba(60, 25, 0, 0.8);
+  color: #ffffff;
+}
+
+.globe-radio-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.globe-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: #FF6400;
+  font-size: 0.8em;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.globe-radio {
+  accent-color: #FF6400;
+}
+
+.globe-fieldset {
+  border: 1px solid #FF6400;
+  border-radius: 6px;
+  padding: 8px;
+  margin: 0;
+  background: rgba(60, 25, 0, 0.3);
+}
+
+.globe-legend {
+  padding: 0 6px;
+  font-size: 12px;
+  color: #FF6400;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+}
+
+.globe-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Globe UI Responsive */
+@media (max-width: 768px) {
+  .globe-ui-panel {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    padding: 12px;
+    position: absolute;
+    width: auto;
+  }
+
+  .globe-control-section {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .globe-radio-group {
+    justify-content: space-between;
+  }
+
+  .globe-button {
+    font-size: 0.8em;
+    padding: 6px 10px;
+    min-height: 40px;
+  }
+
+  .globe-input {
+    width: 100%;
+    min-height: 40px;
+    font-size: 0.85em;
+  }
+
+  .globe-radio-label {
+    font-size: 0.75em;
+  }
+}
+
+@media (max-width: 480px) {
+  .globe-ui-panel {
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    padding: 10px;
+  }
+
+  .globe-controls {
+    gap: 8px;
+  }
+
+  .globe-control-section {
+    gap: 6px;
+  }
+
+  .globe-button {
+    font-size: 0.75em;
+    padding: 5px 8px;
+    min-height: 44px;
+  }
+
+  .globe-input {
+    min-height: 44px;
+    font-size: 0.8em;
+  }
+
+  .globe-radio-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .globe-radio-label {
+    font-size: 0.7em;
+    padding: 8px;
+    border: 1px solid rgba(255, 100, 0, 0.3);
+    border-radius: 4px;
+    background: rgba(60, 25, 0, 0.2);
+    justify-content: center;
+  }
+
+  .globe-fieldset {
+    padding: 6px;
+  }
+
+  .globe-legend {
+    font-size: 10px;
+  }
 }

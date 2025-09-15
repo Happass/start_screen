@@ -470,137 +470,128 @@ export default function Globe() {
 
   return (
     <>
-    {/* 花配置ボタン */}
-    <button
-      onClick={togglePlacementMode}
-      disabled={loading}
-      style={{
-        position: 'fixed',
-        top: '20px',
-        left: '20px',
-        zIndex: 1001,
-        padding: '12px 24px',
-        backgroundColor: loading ? 'rgba(100, 100, 100, 0.5)' : isPlacementMode ? '#FF6400' : 'rgba(255, 100, 0, 0.2)',
-        color: loading ? '#666' : isPlacementMode ? '#000' : '#FF6400',
-        border: '2px solid #FF6400',
-        borderRadius: '8px',
-        cursor: loading ? 'not-allowed' : 'pointer',
-        fontFamily: 'Courier New, monospace',
-        fontSize: '14px',
-        fontWeight: '600',
-        textTransform: 'uppercase',
-        letterSpacing: '1px',
-        boxShadow: '0 0 20px rgba(255, 100, 0, 0.3)',
-        backdropFilter: 'blur(10px)',
-        transition: 'all 0.3s ease'
-      }}
-    >
-      {loading ? 'ロード中...' : isPlacementMode ? '配置モード終了' : '花を配置'}
-    </button>
-
-    {isPlacementMode &&
-    <div style={{
-      position: 'fixed',
-      top: '80px',
-      left: '20px',
-      zIndex: 1001,
-      padding: '10px',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      borderRadius: '8px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px'
-    }}>
-      <div role="radiogroup" aria-label="texture selection" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-          <input
-            type="radio"
-            name="texture"
-            value="flower1"
-            checked={selectedTexture === 'flower1'}
-            onChange={() => setSelectedTexture('flower1')}
-          />
-          自分の花
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
-          <input
-            type="radio"
-            name="texture"
-            value="flower2"
-            checked={selectedTexture === 'flower2'}
-            onChange={() => setSelectedTexture('flower2')}
-          />
-          他人の花
-        </label>
-      </div>
-      <input
-        type="text"
-        placeholder="緯度 (e.g., 35.68)"
-        value={latInput}
-        onChange={(e) => setLatInput(e.target.value)}
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid #FF6400',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          color: 'white'
-        }}
-      />
-      <input
-        type="text"
-        placeholder="経度 (e.g., 139.69)"
-        value={lonInput}
-        onChange={(e) => setLonInput(e.target.value)}
-        style={{
-          padding: '8px',
-          borderRadius: '4px',
-          border: '1px solid #FF6400',
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-          color: 'white'
-        }}
-      />
-      <button
-        onClick={handleAddFlowerByCoordinates}
-        disabled={loading}
-        style={{
-          padding: '10px',
-          backgroundColor: loading ? 'rgba(100, 100, 100, 0.5)' : '#FF6400',
-          color: loading ? '#666' : '#000',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          fontWeight: 'bold'
-        }}
-      >
-        {loading ? '配置中...' : '座標で配置'}
-      </button>
-    </div>
-    }
-
-    <div style={{
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      zIndex: 1001,
-      padding: '10px',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      borderRadius: '8px',
-      color: 'white'
-    }}>
-      <fieldset style={{ border: '1px solid #FF6400', borderRadius: '6px', padding: '8px', margin: 0 }}>
-        <legend style={{ padding: '0 6px', fontSize: '12px' }}>フィルター</legend>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ cursor: 'pointer' }}>
-            <input type="radio" value="all" checked={textureFilter === 'all'} onChange={() => setTextureFilter('all')} /> 全て
-          </label>
-          <label style={{ cursor: 'pointer' }}>
-            <input type="radio" value="flower1" checked={textureFilter === 'flower1'} onChange={() => setTextureFilter('flower1')} /> 自分の花
-          </label>
-          <label style={{ cursor: 'pointer' }}>
-            <input type="radio" value="flower2" checked={textureFilter === 'flower2'} onChange={() => setTextureFilter('flower2')} /> 他人の花
-          </label>
+    {/* UI Panel */}
+    <div className="globe-ui-panel">
+      <div className="globe-controls">
+        {/* 花配置ボタン */}
+        <div className="globe-control-section">
+          <button
+            onClick={togglePlacementMode}
+            disabled={loading}
+            className="globe-button"
+            style={{
+              backgroundColor: loading ? 'rgba(100, 100, 100, 0.5)' : isPlacementMode ? '#FF6400' : 'rgba(255, 100, 0, 0.2)',
+              color: loading ? '#666' : isPlacementMode ? '#000' : '#FF6400'
+            }}
+          >
+            {loading ? 'ロード中...' : isPlacementMode ? '配置モード終了' : '花を配置'}
+          </button>
         </div>
-      </fieldset>
+
+        {isPlacementMode && (
+          <>
+            {/* テクスチャ選択 */}
+            <div className="globe-control-section">
+              <div role="radiogroup" aria-label="texture selection" className="globe-radio-group">
+                <label className="globe-radio-label">
+                  <input
+                    type="radio"
+                    name="texture"
+                    value="flower1"
+                    checked={selectedTexture === 'flower1'}
+                    onChange={() => setSelectedTexture('flower1')}
+                    className="globe-radio"
+                  />
+                  自分の花
+                </label>
+                <label className="globe-radio-label">
+                  <input
+                    type="radio"
+                    name="texture"
+                    value="flower2"
+                    checked={selectedTexture === 'flower2'}
+                    onChange={() => setSelectedTexture('flower2')}
+                    className="globe-radio"
+                  />
+                  他人の花
+                </label>
+              </div>
+            </div>
+
+            {/* 座標入力 */}
+            <div className="globe-control-section">
+              <input
+                type="text"
+                placeholder="緯度 (e.g., 35.68)"
+                value={latInput}
+                onChange={(e) => setLatInput(e.target.value)}
+                className="globe-input"
+              />
+              <input
+                type="text"
+                placeholder="経度 (e.g., 139.69)"
+                value={lonInput}
+                onChange={(e) => setLonInput(e.target.value)}
+                className="globe-input"
+              />
+            </div>
+
+            {/* 座標配置ボタン */}
+            <div className="globe-control-section">
+              <button
+                onClick={handleAddFlowerByCoordinates}
+                disabled={loading}
+                className="globe-button"
+                style={{
+                  backgroundColor: loading ? 'rgba(100, 100, 100, 0.5)' : '#FF6400',
+                  color: loading ? '#666' : '#000'
+                }}
+              >
+                {loading ? '配置中...' : '座標で配置'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* フィルター */}
+        <div className="globe-control-section">
+          <fieldset className="globe-fieldset">
+            <legend className="globe-legend">フィルター</legend>
+            <div className="globe-filter-group">
+              <label className="globe-radio-label">
+                <input
+                  type="radio"
+                  value="all"
+                  checked={textureFilter === 'all'}
+                  onChange={() => setTextureFilter('all')}
+                  className="globe-radio"
+                />
+                全て
+              </label>
+              <label className="globe-radio-label">
+                <input
+                  type="radio"
+                  value="flower1"
+                  checked={textureFilter === 'flower1'}
+                  onChange={() => setTextureFilter('flower1')}
+                  className="globe-radio"
+                />
+                自分の花
+              </label>
+              <label className="globe-radio-label">
+                <input
+                  type="radio"
+                  value="flower2"
+                  checked={textureFilter === 'flower2'}
+                  onChange={() => setTextureFilter('flower2')}
+                  className="globe-radio"
+                />
+                他人の花
+              </label>
+            </div>
+          </fieldset>
+        </div>
+      </div>
     </div>
 
     <Canvas
